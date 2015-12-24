@@ -36,7 +36,7 @@ var OIDClient = function(options) {
 OIDClient.prototype.loadUserInfo = function() {
   var self = this;
   if (!window.localStorage["access_token"]) {
-    throw Error('Can not load user info, access_token is required!');
+    throw new Error('Can not load user info, access_token is required!');
   }
 
   var url = this.provider_uri + '/api/user?access_token=' + window.localStorage["access_token"];
@@ -52,7 +52,7 @@ OIDClient.prototype.makeRequest = function(url, done) {
   var httpRequest = new XMLHttpRequest();
 
   if (!httpRequest) {
-    throw Error('Cannot create an XMLHTTP instance');
+    throw new Error('Cannot create an XMLHTTP instance');
   }
 
   httpRequest.onreadystatechange = function () {
