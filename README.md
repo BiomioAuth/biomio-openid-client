@@ -12,20 +12,22 @@ This library may helps you to implement Biomio login
   </head>
   <body>
     <input type="text" value="" name="external-token" id="external-token">
-    <div onclick="var token = $('#external-token').val(); client.login(token);">Login</div>
+    <div onclick="var token = $('#external-token').val(); OIDClient.login(token, 'popup')">Login</div>
 
     <script src="js/oidclient.js"></script>
     <script>
 
-      var client = new OIDClient({
-        response_type: "token id_token",
-        scope: "openid profile",
-        client_id: "56ce9a6a93c17d2c867c5c293482b8f9"
-      });
+        OIDClient.init({
+          response_type: "token",
+          scope: "openid profile",
+          client_id: "aaabbbccc",
+          redirect_uri: "https://example.com/",
+        });
 
-      if(client.isAuth()) {
-        console.log(client.user);
-      }
+        if (OIDClient.isAuth) {
+          console.info(OIDClient.getUser());
+          console.info(OIDClient.getAccessToken());
+        }
 
     </script>
   </body>
