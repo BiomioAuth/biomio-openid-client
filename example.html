@@ -6,26 +6,27 @@
     <meta name="description" content="">
     <style>
         input[type='text'] {
-            width: 400px;
-            margin: 5% auto 0;
             display: block;
+            width: 400px;
+            padding: 5px 2px;
+            margin: 5% auto 0;
             font-size: 18px;
         }
 
         button {
+            display: block;
             width: 400px;
             margin: 15px auto;
-            display: block;
             font-size: 18px;
         }
     </style>
 </head>
 <body>
 
-<input type="text" value="biomio.vk.test@gmail.com" id="externalToken">
+<input type="text" value="" placeholder="your email" id="externalToken">
 <button onclick="login();">Login</button>
 
-<script src="oidclient.js"></script>
+<script src="biomio-openid-client.js"></script>
 <script>
 
     OIDClient.init({
@@ -35,19 +36,25 @@
         redirect_uri: "http://127.0.0.1:8000/example.html"
     });
 
-    /* parse response from OpenId Connect provider */
+    /**
+     *  Parse response from OpenId Connect provider (if response is exist in URL)
+     *  Call this method on callback page (redirect_uri)
+     *  Currently we use one page, that is why we call this method here.
+     */
     OIDClient.parseResponse();
 
     function login () {
        var externalToken = document.getElementsByTagName("input")[0].value;
-       OIDClient.login(externalToken, function() {
-           if (OIDClient.isAuth()) {
-               console.info(OIDClient.getUser());
-               console.info(OIDClient.getAccessToken());
-           } else {
-               console.info('Authentication is failed!');
-           }
-       });
+       if(externalToken) {
+           OIDClient.login(externalToken, function () {
+               if (OIDClient.isAuth()) {
+                   console.info(OIDClient.getUser());
+                   console.info(OIDClient.getAccessToken());
+               } else {
+                   console.info('Authentication is failed!');
+               }
+           });
+       }
     }
 
 </script>
