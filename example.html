@@ -35,14 +35,19 @@
         redirect_uri: "http://127.0.0.1:8000/example.html"
     });
 
+    /* parse response from OpenId Connect provider */
+    OIDClient.parseResponse();
+
     function login () {
        var externalToken = document.getElementsByTagName("input")[0].value;
-       OIDClient.login(externalToken, 'popup');
-    }
-
-    if (OIDClient.isAuth()) {
-        console.info(OIDClient.getUser());
-        console.info(OIDClient.getAccessToken());
+       OIDClient.login(externalToken, function() {
+           if (OIDClient.isAuth()) {
+               console.info(OIDClient.getUser());
+               console.info(OIDClient.getAccessToken());
+           } else {
+               console.info('Authentication is failed!');
+           }
+       });
     }
 
 </script>

@@ -5,13 +5,13 @@
     response_type: "token" or "code",
     scope: "openid profile",
     client_id: "aaabbbccc",
-    redirect_uri: "https://example.com/",
+    redirect_uri: "https://example.com/authResult.html",
   });
 
-  OIDClient.login('hello@mail.com', 'popup');
-
-  OIDClient.getUser();
-  OIDClient.getAccessToken();
+  OIDClient.login('hello@mail.com', function() {
+    OIDClient.getUser();
+    OIDClient.getAccessToken();
+  });
 
  */
 
@@ -23,6 +23,11 @@ var OIDClient = (function() {
   var scope;
   var client_id;
   var redirect_uri;
+  var popupSettings = {};
+  popupSettings.width = 460;
+  popupSettings.height = 485;
+  popupSettings.left = window.screenX + (window.outerWidth - popupSettings.width) / 2;
+  popupSettings.top = window.screenY + (window.outerHeight - popupSettings.height) / 8;
 
   var init = function(options) {
     if(!options.client_id) {
@@ -36,12 +41,6 @@ var OIDClient = (function() {
     client_id = options.client_id;
     redirect_uri = options.redirect_uri || window.location.protocol + "//" + window.location.host + window.location.pathname;
 
-    /** check if in URL we have response from OpenID provider */
-    if (checkResponse()) {
-      if (window.localStorage['access_token']) {
-        loadUserInfo();
-      }
-    }
   };
 
   var logout = function() {
@@ -51,9 +50,8 @@ var OIDClient = (function() {
     window.localStorage.removeItem('id_token');
   };
 
-  var login = function(external_token, type) {
+  var login = function(external_token, done) {
     external_token = external_token || null;
-    type = (type === 'redirect') ? 'redirect' : 'popup';
 
     logout();
 
@@ -72,10 +70,26 @@ var OIDClient = (function() {
       + '&state=' + state
       + '&redirect_uri=' + redirect_uri;
 
-    if (type === 'popup') {
-      window.open(url, 'null', 'width=460, height=485, location=no');
-    } else {
-      window.location.href = url;
+    var wnd = window.open(url, 'null', 'width='+popupSettings.width+', height='+popupSettings.height+', left='+popupSettings.left+', right='+popupSettings.right+' location=no');
+
+    if (wnd) {
+      wnd.focus();
+      var interval = window.setInterval(function () {
+        if (wnd === null || wnd.closed) {
+          window.clearInterval(interval);
+
+          if (isAuth()) {
+            loadUserInfo(function (err, data) {
+              if (!err && data) {
+                user = data.user;
+                done(user);
+              } else {
+                done(null);
+              }
+            });
+          }
+        }
+      }, 500);
     }
   };
 
@@ -99,10 +113,13 @@ var OIDClient = (function() {
     }
   };
 
-  var checkResponse = function() {
+  /**
+   * parse response (from URL) and close the window
+   */
+  var parseResponse = function() {
     var fragment = parseFragment();
-    if (fragment === {}) {
-      return false;
+    if (typeof fragment.state === 'undefined') {
+      return;
     }
 
     var isStateValid = (fragment.state === getCookie('state'));
@@ -115,16 +132,15 @@ var OIDClient = (function() {
       if(fragment.id_token) {
         window.localStorage["id_token"] = fragment["id_token"];
       }
-      return true;
     }
 
-    return false
+    window.close();
   };
 
   /**
    * Load user info from API
    */
-  var loadUserInfo = function() {
+  var loadUserInfo = function(cb) {
     var access_token = window.localStorage["access_token"];
     if (!access_token) {
       throw new Error('Can not load user info, access_token is required!');
@@ -132,11 +148,7 @@ var OIDClient = (function() {
 
     var url = provider_uri + '/api/user?access_token=' + access_token;
 
-    makeRequest('GET', url, function(err, data) {
-      if (!err && data) {
-        user = data.user;
-      }
-    });
+    makeRequest('GET', url, cb);
   }
 
   var makeRequest = function(method, url, done) {
@@ -251,6 +263,7 @@ var OIDClient = (function() {
     isAuth: isAuth,
     getUser: getUser,
     getIdToken: getIdToken,
-    getAccessToken: getAccessToken
+    getAccessToken: getAccessToken,
+    parseResponse: parseResponse
   }
 })();
