@@ -17,7 +17,6 @@
 
 
 var OIDClient = (function() {
-  var user = null;
   var provider_uri;
   var response_type;
   var scope;
@@ -77,24 +76,10 @@ var OIDClient = (function() {
       var interval = window.setInterval(function () {
         if (wnd === null || wnd.closed) {
           window.clearInterval(interval);
-
-          if (isAuth()) {
-            loadUserInfo(function (err, data) {
-              if (!err && data) {
-                user = data.user;
-                done(user);
-              } else {
-                done(null);
-              }
-            });
-          }
+          done(isAuth());
         }
       }, 500);
     }
-  };
-
-  var getUser = function() {
-    return user;
   };
 
   var getAccessToken = function() {
@@ -137,16 +122,13 @@ var OIDClient = (function() {
     window.close();
   };
 
-  /**
-   * Load user info from API
-   */
-  var loadUserInfo = function(cb) {
-    var access_token = window.localStorage["access_token"];
+  var get = function(resource, cb) {
+    var access_token = getAccessToken();
     if (!access_token) {
-      throw new Error('Can not load user info, access_token is required!');
+      return cb(new Error('User is not authorized!'));
     }
 
-    var url = provider_uri + '/api/user?access_token=' + access_token;
+    var url = provider_uri + resource +'?access_token=' + access_token;
 
     makeRequest('GET', url, cb);
   }
@@ -261,7 +243,7 @@ var OIDClient = (function() {
     login: login,
     logout: logout,
     isAuth: isAuth,
-    getUser: getUser,
+    get: get,
     getIdToken: getIdToken,
     getAccessToken: getAccessToken,
     parseResponse: parseResponse
