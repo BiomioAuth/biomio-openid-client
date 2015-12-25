@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>BioMio OpenID connect client</title>
+    <meta name="description" content="">
+    <style>
+        input[type='text'] {
+            width: 400px;
+            margin: 5% auto 0;
+            display: block;
+            font-size: 18px;
+        }
+
+        button {
+            width: 400px;
+            margin: 15px auto;
+            display: block;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+
+<input type="text" value="biomio.vk.test@gmail.com" id="externalToken">
+<button onclick="login();">Login</button>
+
+<script src="oidclient.js"></script>
+<script>
+
+    OIDClient.init({
+        response_type: "token",
+        scope: "openid profile",
+        client_id: "56ce9a6a93c17d2c867c5c293482b8f9",
+        redirect_uri: "http://127.0.0.1:8000/example.html"
+    });
+
+    function login () {
+       var externalToken = document.getElementsByTagName("input")[0].value;
+       OIDClient.login(externalToken, 'popup');
+    }
+
+    if (OIDClient.isAuth()) {
+        console.info(OIDClient.getUser());
+        console.info(OIDClient.getAccessToken());
+    }
+
+</script>
+</body>
+</html>

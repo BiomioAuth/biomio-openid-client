@@ -62,15 +62,15 @@ var OIDClient = (function() {
     setCookie('nonce', nonce);
     setCookie('state', state);
 
-    var url = this.provider_uri
+    var url = provider_uri
       + '/user/authorize'
-      + '?response_type=' + this.response_type
+      + '?response_type=' + response_type
       + '&external_token=' + external_token
-      + '&scope=' + this.scope
-      + '&client_id=' + this.client_id
-      + '&nonce=' + this.nonce
-      + '&state=' + this.state
-      + '&redirect_uri=' + this.redirect_uri;
+      + '&scope=' + scope
+      + '&client_id=' + client_id
+      + '&nonce=' + nonce
+      + '&state=' + state
+      + '&redirect_uri=' + redirect_uri;
 
     if (type === 'popup') {
       window.open(url, 'null', 'width=460, height=485, location=no');
